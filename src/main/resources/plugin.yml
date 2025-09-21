@@ -1,0 +1,41 @@
+name: InternalSystem
+version: 1.2
+main: me.ignjoro.playerhider.PlayerHider
+api-version: 1.21
+commands:
+  hideplayer:
+    description: Hide a player from everyone except whitelisted players.
+    usage: /hideplayer <player>
+    permission: internalsystem.hide
+  unhideplayer:
+    description: Unhide a previously hidden player.
+    usage: /unhideplayer <player>
+    permission: internalsystem.unhide
+  whitelistplayer:
+    description: Whitelist a player to see hidden players.
+    usage: /whitelistplayer <player>
+    permission: internalsystem.whitelist
+  unwhitelistplayer:
+    description: Remove a player from the whitelist.
+    usage: /unwhitelistplayer <player>
+    permission: internalsystem.unwhitelist
+  internalreload:
+    description: Reload the InternalSystem plugin.
+    usage: /internalreload
+    permission: internalsystem.reload
+permissions:
+  internalsystem.hide:
+    description: Allows hiding a player.
+    default: op
+  internalsystem.unhide:
+    description: Allows unhiding a player.
+    default: op
+  internalsystem.whitelist:
+    description: Allows whitelisting a player to see hidden players.
+    default: op
+  internalsystem.unwhitelist:
+    description: Allows removing a player from the whitelist.
+    default: op
+  internalsystem.reload:
+    description: Allows reloading the plugin.
+    default: op
