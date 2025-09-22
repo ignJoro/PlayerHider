@@ -1,0 +1,38 @@
+name: InternalSystem
+version: 1.0
+main: me.ignjoro.playerhider.PlayerHider
+authors: [ TutlaMC ]
+description: LeaveBind! Lets you bind leaving a server with a keybind
+api-version: 1.21
+commands:
+  hideplayer:
+    description: Hide a player from everyone except whitelisted players.
+    usage: /hideplayer <player>
+    permission: internalsystem.hide
+  unhideplayer:
+    description: Unhide a previously hidden player.
+    usage: /unhideplayer <player>
+    permission: internalsystem.unhide
+  whitelistplayer:
+    description: Whitelist a player to see hidden players.
+    usage: /whitelistplayer <player>
+    permission: internalsystem.whitelist
+  unwhitelistplayer:
+    description: Remove a player from the whitelist.
+    usage: /unwhitelistplayer <player>
+    permission: internalsystem.unwhitelist
+  internalreload:
+    description: Reload the InternalSystem plugin.
+    usage: /internalreload
+    permission: internalsystem.reload
+permissions:
+  internalsystem.hide:
+    default: op
+  internalsystem.unhide:
+    default: op
+  internalsystem.whitelist:
+    default: op
+  internalsystem.unwhitelist:
+    default: op
+  internalsystem.reload:
+    default: op
