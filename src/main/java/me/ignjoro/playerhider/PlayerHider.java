@@ -1,7 +1,7 @@
 package me.ignjoro.playerhider;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -9,13 +9,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -63,7 +63,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
             }
         }
         player.setGlowing(true);
-        player.sendMessage(ChatColor.YELLOW + "⚠ " + ChatColor.GRAY + "ʏᴏᴜ ᴀʀᴇ ᴄᴜʀʀᴇɴᴛʟʏ " + ChatColor.RED + "ʜɪᴅᴅᴇɴ " + ChatColor.YELLOW + "ꜰʀᴏᴍ ᴏᴛʜᴇʀ ᴘʟᴀʏᴇʀꜱ.");
+        player.sendMessage(Util.text("$YELLOW ⚠ $GRAY you are currently $RED hidden $YELLOW from other players."));
     }
 
     private void unhidePlayer(Player player) {
@@ -71,7 +71,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
             other.showPlayer(this, player);
         }
         player.setGlowing(false);
-        player.sendMessage(ChatColor.GREEN + "✅ " + ChatColor.GRAY + "ʏᴏᴜ ᴀʀᴇ ɴᴏ ʟᴏɴɢᴇʀ " + ChatColor.YELLOW + "ʜɪᴅᴅᴇɴ.");
+        player.sendMessage(Util.text("$GREEN ✅ $GRAY you are no longer $yellow hidden."));
     }
 
     @EventHandler
@@ -98,10 +98,10 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
     }
 
     @EventHandler
-    public void onChat(AsyncPlayerChatEvent event) {
+    public void onChat(AsyncChatEvent event) {
         if (hiddenPlayers.contains(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
-            event.getPlayer().sendMessage(ChatColor.RED + "❌ " + ChatColor.GRAY + "ʏᴏᴜ ᴄᴀɴɴᴏᴛ ᴄʜᴀᴛ ᴡʜɪʟᴇ ʜɪᴅᴅᴇɴ.");
+            event.getPlayer().sendMessage(Util.text("$RED ❌ $GRAY you cannot chat while hidden"));
         }
     }
 
@@ -126,9 +126,9 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!sender.isOp()) {
-            sender.sendMessage(ChatColor.RED + "❌ " + ChatColor.GRAY + "ʏᴏᴜ ᴅᴏ ɴᴏᴛ ʜᴀᴠᴇ ᴘᴇʀᴍɪssɪᴏɴ.");
+            sender.sendMessage(Util.text("$RED ❌ $GRAY you do not have permission to access this"));
             return true;
         }
 
@@ -139,7 +139,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                 if (toHide != null) {
                     hiddenPlayers.add(toHide.getUniqueId());
                     hidePlayer(toHide);
-                    sender.sendMessage(ChatColor.YELLOW + "👁 " + ChatColor.GRAY + toHide.getName() + " ɪs ɴᴏᴡ " + ChatColor.RED + "ʜɪᴅᴅᴇɴ.");
+                    sender.sendMessage(Util.text("$YELLOW 👁 $GRAY")+toHide.getName() + Util.text(" is now $RED hidden."));
                 }
                 return true;
 
@@ -149,7 +149,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                 if (toUnhide != null) {
                     hiddenPlayers.remove(toUnhide.getUniqueId());
                     unhidePlayer(toUnhide);
-                    sender.sendMessage(ChatColor.GREEN + "✅ " + ChatColor.GRAY + toUnhide.getName() + " ɪs ɴᴏ ʟᴏɴɢᴇʀ " + ChatColor.YELLOW + "ʜɪᴅᴅᴇɴ.");
+                    sender.sendMessage(Util.text("$GREEN ✅ $GRAY")+toUnhide.getName() + Util.text(" is no longer $YELLOW hidden."));
                 }
                 return true;
 
@@ -165,7 +165,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                             hidden.setGlowing(true);
                         }
                     }
-                    sender.sendMessage(ChatColor.AQUA + "👥 " + ChatColor.GRAY + toWhitelist.getName() + " ᴄᴀɴ ɴᴏᴡ sᴇᴇ " + ChatColor.YELLOW + "ʜɪᴅᴅᴇɴ ᴘʟᴀʏᴇʀs.");
+                    sender.sendMessage(Util.text("$AQUA 👥 $GRAY")+toWhitelist.getName() + Util.text(" can now see $yellow hidden players"));
                 }
                 return true;
 
@@ -180,7 +180,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                             toUnwhitelist.hidePlayer(this, hidden);
                         }
                     }
-                    sender.sendMessage(ChatColor.RED + "🚫 " + ChatColor.GRAY + toUnwhitelist.getName() + " ᴄᴀɴ ɴᴏ ʟᴏɴɢᴇʀ sᴇᴇ " + ChatColor.YELLOW + "ʜɪᴅᴅᴇɴ ᴘʟᴀʏᴇʀs.");
+                    sender.sendMessage(Util.text("$RED 🚫 $GRAY")+toUnwhitelist.getName() + Util.text(" can no longer see $YELLOW hidden players"));
                 }
                 return true;
 
@@ -198,7 +198,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                     Player p = Bukkit.getPlayer(uuid);
                     if (p != null && p.isOnline()) hidePlayer(p);
                 }
-                sender.sendMessage(ChatColor.GOLD + "🔄 " + ChatColor.GRAY + "ɪɴᴛᴇʀɴᴀʟsʏsᴛᴇᴍ " + ChatColor.YELLOW + "ʀᴇʟᴏᴀᴅᴇᴅ.");
+                sender.sendMessage(Util.text("$GOLD 🔄 $GRAY internalsystem $YELLOW reloaded."));
                 return true;
         }
         return false;
