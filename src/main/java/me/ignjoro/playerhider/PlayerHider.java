@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
+import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -48,6 +49,12 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
     public void onEnable() {
         saveDefaultConfig();
         getServer().getPluginManager().registerEvents(this, this);
+
+        Objects.requireNonNull(getCommand("hideplayer")).setExecutor(this);
+        Objects.requireNonNull(getCommand("unhideplayer")).setExecutor(this);
+        Objects.requireNonNull(getCommand("whitelistplayer")).setExecutor(this);
+        Objects.requireNonNull(getCommand("unwhitelistplayer")).setExecutor(this);
+        Objects.requireNonNull(getCommand("internalreload")).setExecutor(this);
 
         loadPlayersFromConfig();
 
@@ -107,7 +114,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
     }
 
     @EventHandler
-    public void onChat(AsyncChatEvent event) {
+    public void onChat(PlayerChatEvent event) {
         if (hiddenPlayers.contains(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(Util.text("$RED ❌ $GRAY you cannot chat while hidden"));
@@ -199,7 +206,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                 whitelistedPlayers.clear();
                 for (String uuid : getConfig().getStringList("hiddenPlayers")) {
                     hiddenPlayers.add(UUID.fromString(uuid));
-                    Player p = Bukkit.getPlayer(uuid);
+                    Player p = Bukkit.getPlayer(UUID.fromString(uuid));
                     if (p != null && p.isOnline()) hidePlayer(p);
                 }
                 for (String uuid : getConfig().getStringList("whitelistedPlayers")) {

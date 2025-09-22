@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/playerhider.iml" filepath="$PROJECT_DIR$/playerhider.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/playerhider.main.iml" filepath="$PROJECT_DIR$/.idea/modules/playerhider.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/PlayerHider.main.iml" filepath="$PROJECT_DIR$/.idea/modules/PlayerHider.main.iml" />
     </modules>
   </component>
 </project>
