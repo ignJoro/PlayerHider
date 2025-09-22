@@ -29,12 +29,6 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
         saveDefaultConfig();
         getServer().getPluginManager().registerEvents(this, this);
 
-        Objects.requireNonNull(getCommand("hideplayer")).setExecutor(this);
-        Objects.requireNonNull(getCommand("unhideplayer")).setExecutor(this);
-        Objects.requireNonNull(getCommand("whitelistplayer")).setExecutor(this);
-        Objects.requireNonNull(getCommand("unwhitelistplayer")).setExecutor(this);
-        Objects.requireNonNull(getCommand("internalreload")).setExecutor(this);
-
         List<String> hidden = getConfig().getStringList("hiddenPlayers");
         for (String uuid : hidden) hiddenPlayers.add(UUID.fromString(uuid));
         List<String> whitelisted = getConfig().getStringList("whitelistedPlayers");
