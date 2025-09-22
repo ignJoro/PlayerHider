@@ -24,15 +24,32 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
     private final Set<UUID> hiddenPlayers = new HashSet<>();
     private final Set<UUID> whitelistedPlayers = new HashSet<>();
 
+    // quick util
+    private void loadPlayersFromConfig() {
+        hiddenPlayers.clear();
+        whitelistedPlayers.clear();
+
+        getConfig().getStringList("hiddenPlayers").stream()
+                .map(UUID::fromString)
+                .forEach(hiddenPlayers::add);
+
+        getConfig().getStringList("whitelistedPlayers").stream()
+                .map(UUID::fromString)
+                .forEach(whitelistedPlayers::add);
+    }
+
+    private void savePlayersToConfig() {
+        getConfig().set("hiddenPlayers", hiddenPlayers.stream().map(UUID::toString).toList());
+        getConfig().set("whitelistedPlayers", whitelistedPlayers.stream().map(UUID::toString).toList());
+        saveConfig();
+    }
+
     @Override
     public void onEnable() {
         saveDefaultConfig();
         getServer().getPluginManager().registerEvents(this, this);
 
-        List<String> hidden = getConfig().getStringList("hiddenPlayers");
-        for (String uuid : hidden) hiddenPlayers.add(UUID.fromString(uuid));
-        List<String> whitelisted = getConfig().getStringList("whitelistedPlayers");
-        for (String uuid : whitelisted) whitelistedPlayers.add(UUID.fromString(uuid));
+        loadPlayersFromConfig();
 
         for (UUID uuid : hiddenPlayers) {
             Player p = Bukkit.getPlayer(uuid);
@@ -42,9 +59,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
 
     @Override
     public void onDisable() {
-        getConfig().set("hiddenPlayers", hiddenPlayers.stream().map(UUID::toString).toList());
-        getConfig().set("whitelistedPlayers", whitelistedPlayers.stream().map(UUID::toString).toList());
-        saveConfig();
+        savePlayersToConfig();
     }
 
     private void hidePlayer(Player player) {
@@ -184,13 +199,11 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                 whitelistedPlayers.clear();
                 for (String uuid : getConfig().getStringList("hiddenPlayers")) {
                     hiddenPlayers.add(UUID.fromString(uuid));
+                    Player p = Bukkit.getPlayer(uuid);
+                    if (p != null && p.isOnline()) hidePlayer(p);
                 }
                 for (String uuid : getConfig().getStringList("whitelistedPlayers")) {
                     whitelistedPlayers.add(UUID.fromString(uuid));
-                }
-                for (UUID uuid : hiddenPlayers) {
-                    Player p = Bukkit.getPlayer(uuid);
-                    if (p != null && p.isOnline()) hidePlayer(p);
                 }
                 sender.sendMessage(Util.text("$GOLD 🔄 $GRAY internalsystem $YELLOW reloaded."));
                 return true;
