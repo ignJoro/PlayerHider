@@ -1,8 +1,7 @@
 name: InternalSystem
-version: 1.1
+version: 1.2
 main: me.ignjoro.playerhider.PlayerHider
 authors: [ ignJoro, TutlaMC ]
-description: LeaveBind! Lets you bind leaving a server with a keybind
 api-version: 1.21
 commands:
   hideplayer:

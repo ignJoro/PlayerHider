@@ -1,7 +1,7 @@
 package me.ignjoro.playerhider;
 
-import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -9,14 +9,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
-import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -24,26 +22,6 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
 
     private final Set<UUID> hiddenPlayers = new HashSet<>();
     private final Set<UUID> whitelistedPlayers = new HashSet<>();
-
-    // quick util
-    private void loadPlayersFromConfig() {
-        hiddenPlayers.clear();
-        whitelistedPlayers.clear();
-
-        getConfig().getStringList("hiddenPlayers").stream()
-                .map(UUID::fromString)
-                .forEach(hiddenPlayers::add);
-
-        getConfig().getStringList("whitelistedPlayers").stream()
-                .map(UUID::fromString)
-                .forEach(whitelistedPlayers::add);
-    }
-
-    private void savePlayersToConfig() {
-        getConfig().set("hiddenPlayers", hiddenPlayers.stream().map(UUID::toString).toList());
-        getConfig().set("whitelistedPlayers", whitelistedPlayers.stream().map(UUID::toString).toList());
-        saveConfig();
-    }
 
     @Override
     public void onEnable() {
@@ -56,7 +34,10 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
         Objects.requireNonNull(getCommand("unwhitelistplayer")).setExecutor(this);
         Objects.requireNonNull(getCommand("internalreload")).setExecutor(this);
 
-        loadPlayersFromConfig();
+        List<String> hidden = getConfig().getStringList("hiddenPlayers");
+        for (String uuid : hidden) hiddenPlayers.add(UUID.fromString(uuid));
+        List<String> whitelisted = getConfig().getStringList("whitelistedPlayers");
+        for (String uuid : whitelisted) whitelistedPlayers.add(UUID.fromString(uuid));
 
         for (UUID uuid : hiddenPlayers) {
             Player p = Bukkit.getPlayer(uuid);
@@ -66,7 +47,9 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
 
     @Override
     public void onDisable() {
-        savePlayersToConfig();
+        getConfig().set("hiddenPlayers", hiddenPlayers.stream().map(UUID::toString).toList());
+        getConfig().set("whitelistedPlayers", whitelistedPlayers.stream().map(UUID::toString).toList());
+        saveConfig();
     }
 
     private void hidePlayer(Player player) {
@@ -74,12 +57,12 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
             if (other.equals(player)) continue;
             if (whitelistedPlayers.contains(other.getUniqueId())) {
                 other.showPlayer(this, player);
+                player.setGlowing(true);
             } else {
                 other.hidePlayer(this, player);
             }
         }
-        player.setGlowing(true);
-        player.sendMessage(Util.text("$YELLOW ⚠ $GRAY you are currently $RED hidden $YELLOW from other players."));
+        player.sendMessage(ChatColor.GRAY + "You are currently hidden.");
     }
 
     private void unhidePlayer(Player player) {
@@ -87,7 +70,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
             other.showPlayer(this, player);
         }
         player.setGlowing(false);
-        player.sendMessage(Util.text("$GREEN ✅ $GRAY you are no longer $yellow hidden."));
+        player.sendMessage(ChatColor.GRAY + "You are no longer hidden.");
     }
 
     @EventHandler
@@ -114,10 +97,10 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
     }
 
     @EventHandler
-    public void onChat(PlayerChatEvent event) {
+    public void onChat(AsyncPlayerChatEvent event) {
         if (hiddenPlayers.contains(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
-            event.getPlayer().sendMessage(Util.text("$RED ❌ $GRAY you cannot chat while hidden"));
+            event.getPlayer().sendMessage(ChatColor.RED + "You cannot chat while hidden.");
         }
     }
 
@@ -142,9 +125,9 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.isOp()) {
-            sender.sendMessage(Util.text("$RED ❌ $GRAY you do not have permission to access this"));
+            sender.sendMessage(ChatColor.RED + "You do not have permission.");
             return true;
         }
 
@@ -155,7 +138,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                 if (toHide != null) {
                     hiddenPlayers.add(toHide.getUniqueId());
                     hidePlayer(toHide);
-                    sender.sendMessage(Util.text("$YELLOW 👁 $GRAY")+toHide.getName() + Util.text(" is now $RED hidden."));
+                    sender.sendMessage(ChatColor.GREEN + toHide.getName() + " is now hidden.");
                 }
                 return true;
 
@@ -165,7 +148,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                 if (toUnhide != null) {
                     hiddenPlayers.remove(toUnhide.getUniqueId());
                     unhidePlayer(toUnhide);
-                    sender.sendMessage(Util.text("$GREEN ✅ $GRAY")+toUnhide.getName() + Util.text(" is no longer $YELLOW hidden."));
+                    sender.sendMessage(ChatColor.GREEN + toUnhide.getName() + " is no longer hidden.");
                 }
                 return true;
 
@@ -181,7 +164,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                             hidden.setGlowing(true);
                         }
                     }
-                    sender.sendMessage(Util.text("$AQUA 👥 $GRAY")+toWhitelist.getName() + Util.text(" can now see $yellow hidden players"));
+                    sender.sendMessage(ChatColor.GREEN + toWhitelist.getName() + " can now see hidden players.");
                 }
                 return true;
 
@@ -196,7 +179,7 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                             toUnwhitelist.hidePlayer(this, hidden);
                         }
                     }
-                    sender.sendMessage(Util.text("$RED 🚫 $GRAY")+toUnwhitelist.getName() + Util.text(" can no longer see $YELLOW hidden players"));
+                    sender.sendMessage(ChatColor.GREEN + toUnwhitelist.getName() + " can no longer see hidden players.");
                 }
                 return true;
 
@@ -206,13 +189,15 @@ public class PlayerHider extends JavaPlugin implements Listener, TabExecutor {
                 whitelistedPlayers.clear();
                 for (String uuid : getConfig().getStringList("hiddenPlayers")) {
                     hiddenPlayers.add(UUID.fromString(uuid));
-                    Player p = Bukkit.getPlayer(UUID.fromString(uuid));
-                    if (p != null && p.isOnline()) hidePlayer(p);
                 }
                 for (String uuid : getConfig().getStringList("whitelistedPlayers")) {
                     whitelistedPlayers.add(UUID.fromString(uuid));
                 }
-                sender.sendMessage(Util.text("$GOLD 🔄 $GRAY internalsystem $YELLOW reloaded."));
+                for (UUID uuid : hiddenPlayers) {
+                    Player p = Bukkit.getPlayer(uuid);
+                    if (p != null && p.isOnline()) hidePlayer(p);
+                }
+                sender.sendMessage(ChatColor.YELLOW + "InternalSystem reloaded.");
                 return true;
         }
         return false;
